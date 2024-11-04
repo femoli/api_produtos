@@ -1,8 +1,8 @@
-class ProdutoService:
-    @staticmethod
-    async def fetch_product_data(codigoProduto: str):
-        # Mock de resposta
-        return {
-            "codigoProduto": codigoProduto,
-            "descricao": "Descrição mockada do produto"
-        }
+from src.domain.ports.base_client import BaseClientMock
+from src.domain.ports.produtos.models.produto import Produto
+
+
+async def get_produto(codigoProduto: int) -> Produto:
+    client = BaseClientMock()
+    response = client.obter_dados_produto(codigoProduto)
+    return Produto(**response)
