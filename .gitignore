@@ -1,0 +1,41 @@
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Arquivos de configuração da IDE
+.vscode/
+*.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos de configuração do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de log
+*.log
+
+# Arquivos de teste
+tests/__pycache__/
+*.pytest_cache/
+
+# Arquivos de saída de compilação
+*.egg-info/
+dist/
+build/
+
+# Configurações do editor
+*.swp
+*.swo
+
+# Outros
+.collection_produto.json
