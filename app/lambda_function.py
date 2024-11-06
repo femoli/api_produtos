@@ -1,49 +1,70 @@
-import json
+from fastapi import FastAPI, APIRouter, HTTPException
+from mangum import Mangum  # Para integrar o FastAPI com AWS Lambda
 import requests
+import json
+from typing import Dict, Any
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
+# Importando a configuração
+from src.config.settings import settings
 
+# Instanciando o FastAPI
 app = FastAPI()
 
+# Router do produto, com um endpoint para buscar o produto por código
+router = APIRouter()
 
-def get_produto_from_mock_api(codigo_produto: int):
+# Função para desserializar os dados
+def desserializar_resposta_api(serialized_data: str) -> Dict[str, Any]:
     try:
-        response = requests.get("http://localhost:8001/XPTO")
+        data = json.loads(serialized_data)
+        return data
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao desserializar dados: {e}")
+
+# Função para obter dados da API
+def obter_dados_da_api() -> str:
+    try:
+        response = requests.get(settings.BASE_URL_MAINFRAME)
         response.raise_for_status()
-        data = response.json()
-
-        # Desserializar o conteúdo de "Data" como JSON
-        data = json.loads(data["Data"])
-
-        # Navegar até "TABELA-PRODUTOS" dentro de "DATA-01"
-        produtos = data.get("DATA-01", {}).get("TABELA-PRODUTOS", [])
-        produto = next(
-            (item for item in produtos if item["COD-PROD"] == codigo_produto),
-            None,
-        )
-
-        if produto is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Produto não encontrado na mock API",
-            )
-
-        return produto
-
+        return response.text
     except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=500,
-            detail="Erro ao conectar à mock API",
-        ) from e
-    except json.JSONDecodeError:
-        raise HTTPException(
-            status_code=500,
-            detail="Erro ao processar a resposta da mock API",
-        )
+        raise HTTPException(status_code=500, detail=f"Erro na requisição: {e}")
 
+# Função para mapear os dados do produto
+def map_produto_para_resposta_api(produto: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "codigoProduto": produto.get("PROD-XPTO"),
+        "familiaProduto": produto.get("FAM-XPTO"),
+        "canalProduto": produto.get("CANAL-XPTO"),
+        "grupoProduto": produto.get("GRUPO-XPTO"),
+        "tagProduto": produto.get("TAG-XPTO"),
+        "dataAtualizacao": produto.get("DATA-ATU-XPTO"),
+        "horaAtualizacao": produto.get("HORA-ATU-XPTO"),
+        "analistaAtualizacao": produto.get("ANL-ATU-XPTO"),
+        "nomeProduto": produto.get("NOME-PROD-XPTO"),
+        "descricaoProduto": produto.get("DESC1-XPTO") or produto.get("DESC2-XPTO") or produto.get("DESC3-XPTO"),
+        "mensagemAtualizacao": produto.get("MSG-UPDATE-XPTO"),
+        "flagProduto": produto.get("FLAG-XPTO")
+    }
 
-@app.get("/produtos/{codigo_produto}")
-def get_produto(codigo_produto: int):
-    produto = get_produto_from_mock_api(codigo_produto)
-    return JSONResponse(content=produto)
+# Endpoint para buscar o produto por código
+@router.get("/produtos/{codigo_produto}")
+async def obter_produto_por_codigo(codigo_produto: int) -> Dict[str, Any]:
+    serialized_data = obter_dados_da_api()  # Obtendo dados da mock API
+    dados = desserializar_resposta_api(serialized_data)  # Desserializando os dados
+
+    # Acessando os produtos
+    produtos = dados.get("Result", {}).get("AREA-XPTO", {}).get("TB-PRODUTOS", [])
+    
+    # Buscando o produto específico
+    for produto in produtos:
+        if produto.get("PROD-XPTO") == codigo_produto:
+            return map_produto_para_resposta_api(produto)
+
+    raise HTTPException(status_code=404, detail="Produto não encontrado")
+
+# Incluindo o router no app
+app.include_router(router)
+
+# Instanciando o handler do AWS Lambda
+handler = Mangum(app)
