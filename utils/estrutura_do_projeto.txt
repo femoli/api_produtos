@@ -1,0 +1,38 @@
+.
+├── app
+│   ├── lambda_function.py
+│   ├── requirements.txt
+│   ├── src
+│   │   ├── adapters
+│   │   │   ├── entrypoints
+│   │   │   │   └── api
+│   │   │   │       ├── request
+│   │   │   │       ├── response
+│   │   │   │       └── router.py
+│   │   │   └── mappers
+│   │   ├── config
+│   │   │   └── settings.py
+│   │   ├── domain
+│   │   │   ├── models
+│   │   │   ├── ports
+│   │   │   │   ├── base_client.py
+│   │   │   │   └── produtos
+│   │   │   │       ├── mappers
+│   │   │   │       │   ├── json_mapper.py
+│   │   │   │       │   └── produto_mapper.py
+│   │   │   │       ├── models
+│   │   │   │       ├── produto_service.py
+│   │   │   │       ├── request
+│   │   │   │       └── response
+│   │   │   └── usecases
+│   │   │       └── list_produto.py
+│   │   └── mock_api
+│   │       └── main.py
+│   └── tests
+├── collection_produto.json
+├── estrutura_do_projeto.txt
+├── gera_produtos.py
+├── produtos_gerados.json
+└── README.md
+
+21 directories, 15 files

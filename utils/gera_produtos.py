@@ -1,8 +1,6 @@
 import random
 import json
-
 from datetime import datetime, timedelta
-
 
 def generate_random_product():
     # Gerar valores aleatórios para cada campo
@@ -44,15 +42,17 @@ def generate_random_product():
         "FLAG-XPTO": "S"
     }
 
-
 # Gerar 100 produtos
 products = [generate_random_product() for _ in range(100)]
+
+# Ordenar os produtos pelo campo PROD-XPTO, do menor para o maior
+products_sorted = sorted(products, key=lambda x: x["PROD-XPTO"])
 
 # Estrutura final
 final_data = {
     "Result": {
         "AREA-XPTO": {
-            "TB-PRODUTOS": products
+            "TB-PRODUTOS": products_sorted
         },
         "Server": "serv0123456",
         "Terminal": ""

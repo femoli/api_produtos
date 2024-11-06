@@ -1,16 +1,18 @@
-from src.domain.ports.produtos.mappers.produto_mapper import obter_produto_por_codigo
-from typing import Dict, Any
+import requests
+from src.config.settings import settings
 
-def buscar_produto_por_codigo(codigo_produto: int) -> Dict[str, Any]:
-    """
-    Serviço para buscar um produto pelo código, integrando com o mapeador para
-    obter os dados da API e desserializar a resposta.
+class ProdutoService:
+    def __init__(self):
+        self.base_url = settings.BASE_URL_MAINFRAME
 
-    Args:
-        codigo_produto (int): Código do produto a ser procurado.
-
-    Returns:
-        dict: Dados do produto, ou um dicionário vazio caso não encontrado.
-    """
-    produto = obter_produto_por_codigo(codigo_produto)
-    return produto
+    def get_produto_by_codigo(self, codigo_produto: int):
+        response = requests.get(self.base_url)
+        response_data = response.json()
+        
+        produtos = response_data["Result"]["AREA-XPTO"]["TB-PRODUTOS"]
+        
+        # Filtra o produto com o código especificado
+        produto = next(
+            (item for item in produtos if item["PROD-XPTO"] == codigo_produto), 
+            None)
+        return produto
